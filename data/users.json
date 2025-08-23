@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Pratyusha",
+    "email": "pratyusha23062003@gmail.com",
+    "passwordHash": "$2a$10$677DJS6.nRekOv/Mn/PRlupm4egQkZ617hEgDfhJbyvQMy2Q2L1XK",
+    "createdAt": "2025-08-23T05:10:20.495Z"
+  },
+  {
+    "id": 2,
+    "name": "Pratyusha",
+    "email": "pratyusha23062002@gmail.com",
+    "passwordHash": "$2a$10$ENt6EUAO0g0KuHXMg.lMgO7fc3aWoD1/fmLC/ogRlMj5gByPRkBNm",
+    "createdAt": "2025-08-23T09:25:49.801Z"
+  },
+  {
+    "id": 3,
+    "name": "Nani",
+    "email": "sagar12@gmail.com",
+    "passwordHash": "$2a$10$su2yPxm7B4xvnCq0iicIvOIG4szGMq1NjuyexhzHzMjy448c5xpe6",
+    "createdAt": "2025-08-23T09:26:27.315Z"
+  },
+  {
+    "id": 4,
+    "name": "pydiNaidu",
+    "email": "pydi@123gmail.com",
+    "passwordHash": "$2a$10$wgbFl1yH19UEN17ZOi091O4NQunhgeaE6DJQMZd2Z1TUBLUT802K.",
+    "createdAt": "2025-08-23T09:27:42.339Z"
+  },
+  {
+    "id": 5,
+    "name": "komala",
+    "email": "komala@123gmail.com",
+    "passwordHash": "$2a$10$cJeMyedTrysYsvmVy783gOZTeghcLRWx4AkEHBA/P1Z7Ik2Q68z9K",
+    "createdAt": "2025-08-23T16:29:12.820Z"
+  }
+]
