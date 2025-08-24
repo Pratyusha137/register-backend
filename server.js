@@ -1,93 +1,84 @@
-const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
-const bcrypt = require("bcryptjs");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
+const User = require('./models/User'); // ← Mongoose model import
 
 const app = express();
-// ✅ Changed port to 5000 to match frontend proxy
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// ----- JSON "database" -----
-const DATA_DIR = path.join(__dirname, "data");
-const USERS_FILE = path.join(DATA_DIR, "users.json");
+// MongoDB Connection
+const mongoURI = "mongodb+srv://Pratyusha:Pratyusha123@cluster0.zoibxg3.mongodb.net/registerDB?retryWrites=true&w=majority";
 
-function ensureDataFile() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-  if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, "[]", "utf-8");
-}
-ensureDataFile();
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB Connected ✅"))
+.catch(err => console.log("MongoDB connection error:", err));
 
-function readUsers() {
-  try {
-    const raw = fs.readFileSync(USERS_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-// Health check
-app.get("/", (_req, res) => {
-  res.send("Register API is running ✅");
+// Health Check
+app.get('/', (_req, res) => {
+    res.send("Register API is running ✅");
 });
 
-// Register route
-app.post("/api/register", async (req, res) => {
-  const { name, email, password } = req.body;
+// Register Route
+app.post('/api/register', async (req, res) => {
+    const { name, email, password } = req.body;
 
-  // Basic validations
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
+    // Basic validations
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: "Invalid email address." });
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email address." });
+    }
 
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters." });
-  }
+    if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters." });
+    }
 
-  const users = readUsers();
-  const exists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
-  if (exists) {
-    return res.status(409).json({ message: "Email already registered." });
-  }
+    try {
+        // Check if email already exists
+        const exists = await User.findOne({ email: email.toLowerCase() });
+        if (exists) {
+            return res.status(409).json({ message: "Email already registered." });
+        }
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const nextId = users.length ? users[users.length - 1].id + 1 : 1;
+        const passwordHash = await bcrypt.hash(password, 10);
 
-  const newUser = {
-    id: nextId,
-    name,
-    email,
-    passwordHash,
-    createdAt: new Date().toISOString()
-  };
+        const newUser = new User({
+            name,
+            email: email.toLowerCase(),
+            password: passwordHash
+        });
 
-  users.push(newUser);
-  writeUsers(users);
+        await newUser.save();
 
-  const { passwordHash: _ph, ...safeUser } = newUser;
-  res.status(201).json({ message: "Registered successfully!", user: safeUser });
+        const { password: _p, ...safeUser } = newUser._doc; // remove password from response
+        res.status(201).json({ message: "Registered successfully!", user: safeUser });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// List users (without password hash)
-app.get("/api/users", (_req, res) => {
-  const safe = readUsers().map(({ passwordHash, ...u }) => u);
-  res.json(safe);
+// List Users (without password)
+app.get('/api/users', async (_req, res) => {
+    try {
+        const users = await User.find({}, { password: 0 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ API ready on http://localhost:${PORT}`);
-});
+// Start Server
+app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));
