@@ -6,13 +6,17 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/User'); // ← Mongoose model import
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // Render dynamic port
 
-// Middleware
-app.use(cors());
+// ✅ Middleware with proper CORS
+app.use(cors({
+    origin: '*',                   // Allow all origins (frontend localhost & production)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(bodyParser.json());
 
-// MongoDB Connection
+// ✅ MongoDB Connection with actual password
 const mongoURI = "mongodb+srv://Pratyusha:Pratyusha123@cluster0.zoibxg3.mongodb.net/registerDB?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI, {
